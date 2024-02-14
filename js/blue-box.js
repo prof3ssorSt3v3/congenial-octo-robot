@@ -19,6 +19,7 @@ p {
 <div>
   <h2>Blue Box</h2>
   <p>Go ahead and click this blue box.</p>
+  <p><button>Click Me Instead?</button></p>
 </div>
 `;
 
@@ -31,10 +32,11 @@ class BlueBox extends HTMLElement {
     //reference the div from the template
     this.element = shadowRoot.querySelector('div');
     this.element.querySelector('h2').textContent = `Blue ${this.name} Box`;
+    this.button = this.element.querySelector('button');
   }
   //list the attributes
   static get observedAttributes() {
-    return ['name'];
+    return ['name', 'func'];
   }
   //create a property get and set for each attribute
   get name() {
@@ -45,6 +47,10 @@ class BlueBox extends HTMLElement {
   }
   connectedCallback() {
     //method is run when the web component is added to the web page
+    this.button.addEventListener('click', (ev) => {
+      this.#_internalFunc(ev, this);
+    });
+    //if we use this._internalFunc, then `this` inside the function will be the button
   }
   disconnectedCallback() {
     //method is run when the web component is removed from the web page
@@ -54,6 +60,15 @@ class BlueBox extends HTMLElement {
     if (attributeName === 'name') {
       this.element.querySelector('h2').textContent = `Blue ${this.name} Box`;
     }
+  }
+  #_internalFunc(ev) {
+    ev.stopImmediatePropagation();
+    //this stops the click bubbling from the button up to the <blue-box>
+    //function meant to be called from inside the component, not from main.js
+    // console.log(ev, this);
+    let newName = ['Vincent', 'Angie', 'Luciano', 'Eduardo'][Math.floor(Math.random() * 4)];
+    console.log(newName, 'from inside #_internalFunc');
+    this.setAttribute('name', newName);
   }
 }
 
